@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>사이트 관리 — CloudPress</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="dashboard.css"/>
+  <style>
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
+    .info-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
+    .info-label{font-size:.75rem;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+    .info-val{font-size:.92rem;font-weight:600;word-break:break-all}
+    .info-val a{color:var(--accent);text-decoration:none}
+    .info-val a:hover{text-decoration:underline}
+    .section-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:16px}
+    .section-title{font-family:var(--font-head);font-size:.95rem;font-weight:700;margin-bottom:16px}
+    .cred-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+    .cred-row:last-child{border-bottom:none}
+    .cred-label{font-size:.8rem;color:var(--muted)}
+    .cred-val{font-size:.85rem;font-weight:600;font-family:monospace;max-width:220px;text-align:right;word-break:break-all}
+    .copy-btn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:.75rem;color:var(--muted);cursor:pointer;transition:all .2s;flex-shrink:0;margin-left:10px}
+    .copy-btn:hover{border-color:var(--border2);color:var(--text)}
+    .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:600}
+    .status-dot{width:7px;height:7px;border-radius:50%}
+    .domain-input-row{display:flex;gap:8px}
+    .domain-input-row input{flex:1;padding:10px 13px;background:var(--bg);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--font-body);font-size:.88rem;outline:none;transition:border-color .2s}
+    .domain-input-row input:focus{border-color:var(--accent)}
+    .danger-zone{border-color:rgba(239,68,68,.2)}
+    .cp-toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;font-size:.88rem;font-weight:500;color:#fff;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;z-index:9999;max-width:320px}
+    .cp-toast.show{opacity:1;transform:translateY(0)}
+    .cp-toast.success{background:#22c55e}.cp-toast.error{background:#ef4444}.cp-toast.info{background:#6366f1}
+    @media(max-width:600px){.info-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="app-wrap">
+  <aside class="sidebar" id="sidebar">
+    <a href="/dashboard.html" class="sb-logo">
+      <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
+        <path d="M14 2L26 8V20L14 26L2 20V8L14 2Z" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M14 8L20 11V17L14 20L8 17V11L14 8Z" fill="currentColor" opacity="0.5"/>
+        <circle cx="14" cy="14" r="2.2" fill="currentColor"/>
+      </svg>
+      CloudPress
+    </a>
+    <nav class="sb-nav">
+      <div class="sb-section">
+        <div class="sb-label">메인</div>
+        <a href="/dashboard.html" class="sb-link active">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
+          대시보드
+        </a>
+        <a href="/create.html" class="sb-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          사이트 추가
+        </a>
+      </div>
+      <div class="sb-section">
+        <button class="sb-link danger" onclick="CP.logout()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><polyline points="16 17 21 12 16 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          로그아웃
+        </button>
+      </div>
+    </nav>
+    <div class="sb-user">
+      <div class="sb-avatar" id="sbAvatar">?</div>
+      <div class="sb-uinfo">
+        <div class="sb-uname" id="sbName">—</div>
+        <div class="sb-uemail" id="sbEmail">—</div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <main class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:14px">
+        <button class="sidebar-toggle" onclick="openSidebar()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <span class="topbar-title" id="pageTitle">사이트 관리</span>
+      </div>
+      <div class="topbar-actions">
+        <a href="/dashboard.html" class="btn btn-ghost btn-sm">← 대시보드</a>
+      </div>
+    </div>
+
+    <div class="content" id="mainContent">
+      <div style="color:var(--muted);font-size:.88rem;padding:20px 0">불러오는 중...</div>
+    </div>
+  </main>
+</div>
+
+<script src="/app.js"></script>
+<script>
+let currentSite = null;
+
+async function init() {
+  const user = await CP.requireAuth();
+  if (!user) return;
+  document.getElementById('sbAvatar').textContent = user.name[0].toUpperCase();
+  document.getElementById('sbName').textContent = user.name;
+  document.getElementById('sbEmail').textContent = user.email;
+
+  const params = new URLSearchParams(location.search);
+  const siteId = params.get('id');
+  if (!siteId) { location.href = '/dashboard.html'; return; }
+
+  const site = await CP.getSite(siteId);
+  if (!site) { location.href = '/dashboard.html'; return; }
+
+  currentSite = site;
+  renderSite(site);
+}
+
+function renderSite(s) {
+  document.getElementById('pageTitle').textContent = s.name;
+
+  const status = CP.statusBadge(s.status);
+  const displayUrl = s.custom_domain
+    ? `https://${s.custom_domain}`
+    : (s.wp_url || `https://${s.subdomain}.cloudpress.site`);
+  const adminUrl = s.wp_admin_url || displayUrl + '/wp-admin';
+
+  document.getElementById('mainContent').innerHTML = `
+    <div style="margin-bottom:20px;display:flex;align-items:center;gap:12px">
+      <h1 style="font-family:var(--font-head);font-size:1.3rem;font-weight:700">${escHtml(s.name)}</h1>
+      <span class="badge" style="background:${status.color}18;color:${status.color}">
+        <span class="status-dot" style="background:${status.color}"></span>
+        ${status.label}
+      </span>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-label">사이트 URL</div>
+        <div class="info-val"><a href="${displayUrl}" target="_blank">${displayUrl}</a></div>
+      </div>
+      <div class="info-card">
+        <div class="info-label">개설일</div>
+        <div class="info-val">${CP.formatDate(s.created_at)}</div>
+      </div>
+      <div class="info-card">
+        <div class="info-label">PHP 버전</div>
+        <div class="info-val">PHP ${s.php_version || '8.2'}</div>
+      </div>
+      <div class="info-card">
+        <div class="info-label">플랜</div>
+        <div class="info-val">${CP.planInfo(s.plan).name}</div>
+      </div>
+    </div>
+
+    ${s.status === 'active' ? `
+    <!-- WordPress 접속 정보 -->
+    <div class="section-card">
+      <div class="section-title">WordPress 접속 정보</div>
+      <div class="cred-row">
+        <span class="cred-label">관리자 URL</span>
+        <span class="cred-val"><a href="${adminUrl}" target="_blank">${adminUrl}</a></span>
+        <button class="copy-btn" onclick="copyText('${adminUrl}',this)">복사</button>
+      </div>
+      <div class="cred-row">
+        <span class="cred-label">아이디</span>
+        <span class="cred-val">${escHtml(s.wp_username || 'admin')}</span>
+        <button class="copy-btn" onclick="copyText('${s.wp_username || 'admin'}',this)">복사</button>
+      </div>
+      <div class="cred-row">
+        <span class="cred-label">비밀번호</span>
+        <span class="cred-val" id="passVal">••••••••</span>
+        <button class="copy-btn" onclick="togglePass('${escHtml(s.wp_password || '')}',this)">보기</button>
+      </div>
+      <div style="margin-top:16px">
+        <a href="${adminUrl}" target="_blank" class="btn btn-primary btn-sm">WordPress 관리자 접속 →</a>
+      </div>
+    </div>
+
+    <!-- 커스텀 도메인 -->
+    <div class="section-card">
+      <div class="section-title">커스텀 도메인 연결</div>
+      <p style="font-size:.84rem;color:var(--muted);margin-bottom:14px">
+        보유한 도메인을 이 WordPress 사이트에 연결합니다.
+        도메인 DNS에서 <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:.8rem">${s.subdomain}.cloudpress.site</code>로 CNAME을 설정한 후 입력해주세요.
+      </p>
+      ${s.custom_domain ? `
+      <div class="cred-row" style="margin-bottom:12px">
+        <span class="cred-label">현재 연결된 도메인</span>
+        <span class="cred-val"><a href="https://${s.custom_domain}" target="_blank">${s.custom_domain}</a></span>
+      </div>` : ''}
+      <div class="domain-input-row">
+        <input type="text" id="customDomainInput" placeholder="예: www.myblog.com" value="${s.custom_domain || ''}"/>
+        <button class="btn btn-primary btn-sm" onclick="saveDomain()">저장</button>
+      </div>
+    </div>
+    ` : `
+    <div class="section-card" style="text-align:center;padding:32px">
+      ${s.status === 'provisioning'
+        ? '<div style="color:var(--accent)">WordPress 설치 중입니다. 잠시 후 새로고침해주세요.</div>'
+        : '<div style="color:var(--error)">사이트 설치 중 오류가 발생했습니다. 삭제 후 다시 개설해주세요.</div>'}
+    </div>`}
+
+    <!-- 위험 구역 -->
+    <div class="section-card danger-zone">
+      <div class="section-title" style="color:var(--error)">위험 구역</div>
+      <p style="font-size:.84rem;color:var(--muted);margin-bottom:14px">사이트를 삭제하면 WordPress 데이터가 모두 제거됩니다. 이 작업은 되돌릴 수 없습니다.</p>
+      <button class="btn btn-sm" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:var(--error)" onclick="deleteSite()">
+        이 사이트 삭제
+      </button>
+    </div>
+  `;
+}
+
+let passVisible = false;
+function togglePass(pass, btn) {
+  passVisible = !passVisible;
+  document.getElementById('passVal').textContent = passVisible ? pass : '••••••••';
+  btn.textContent = passVisible ? '숨기기' : '보기';
+}
+
+async function saveDomain() {
+  const domain = document.getElementById('customDomainInput').value.trim();
+  if (!domain) { showToast('도메인을 입력해주세요.', 'error'); return; }
+
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = '저장 중...';
+
+  const res = await CP.setSiteCustomDomain(currentSite.id, domain);
+  btn.disabled = false; btn.textContent = '저장';
+
+  if (res.ok) {
+    currentSite = res.site;
+    showToast('커스텀 도메인이 연결되었습니다.', 'success');
+    renderSite(currentSite);
+  } else {
+    showToast(res.error || '도메인 저장에 실패했습니다.', 'error');
+  }
+}
+
+async function deleteSite() {
+  if (!confirm(`"${currentSite.name}" 사이트를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) return;
+  const res = await CP.deleteSite(currentSite.id);
+  if (res.ok) {
+    showToast('삭제되었습니다.', 'success');
+    setTimeout(() => location.href = '/dashboard.html', 1000);
+  } else {
+    showToast(res.error || '삭제 실패', 'error');
+  }
+}
+
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '완료!';
+    setTimeout(() => btn.textContent = '복사', 1500);
+  });
+}
+
+function escHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+init();
+</script>
+</body>
+</html>

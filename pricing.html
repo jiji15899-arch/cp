@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>플랜 변경 — CloudPress</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="dashboard.css"/>
+  <style>
+    .pricing-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;max-width:860px}
+    .pcard{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;transition:all .2s;position:relative}
+    .pcard.current{border-color:rgba(249,115,22,.3);background:rgba(249,115,22,.04)}
+    .pcard.featured{border-color:rgba(99,102,241,.3)}
+    .pcard-badge{position:absolute;top:-10px;left:20px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:.72rem;font-weight:700;padding:3px 12px;border-radius:20px}
+    .current-badge{background:rgba(34,197,94,.1);color:var(--success);border:1px solid rgba(34,197,94,.2);font-size:.72rem;font-weight:700;padding:3px 12px;border-radius:20px;display:inline-block;margin-bottom:12px}
+    .pname{font-family:var(--font-head);font-size:1.1rem;font-weight:700;margin-bottom:6px}
+    .pprice{font-size:2rem;font-weight:700;font-family:var(--font-head);margin-bottom:4px}
+    .pprice span{font-size:1rem;font-weight:400;color:var(--muted)}
+    .pdesc{color:var(--muted);font-size:.83rem;margin-bottom:20px}
+    .plist{list-style:none;margin-bottom:22px}
+    .plist li{display:flex;align-items:flex-start;gap:8px;font-size:.84rem;padding:5px 0;border-bottom:1px solid var(--border)}
+    .plist li:last-child{border-bottom:none}
+    .plist svg{width:14px;height:14px;color:var(--success);flex-shrink:0;margin-top:1px}
+  </style>
+</head>
+<body>
+<div class="app-wrap">
+  <aside class="sidebar" id="sidebar">
+    <a href="/dashboard.html" class="sb-logo">
+      <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
+        <path d="M14 2L26 8V20L14 26L2 20V8L14 2Z" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M14 8L20 11V17L14 20L8 17V11L14 8Z" fill="currentColor" opacity="0.5"/>
+        <circle cx="14" cy="14" r="2.2" fill="currentColor"/>
+      </svg>
+      CloudPress
+    </a>
+    <nav class="sb-nav">
+      <div class="sb-section">
+        <a href="/dashboard.html" class="sb-link">대시보드</a>
+        <a href="/pricing.html" class="sb-link active">요금제 변경</a>
+        <a href="/account.html" class="sb-link">내 계정</a>
+        <button class="sb-link danger" onclick="CP.logout()">로그아웃</button>
+      </div>
+    </nav>
+    <div class="sb-user">
+      <div class="sb-avatar" id="sbAvatar">?</div>
+      <div class="sb-uinfo"><div class="sb-uname" id="sbName">—</div><div class="sb-uemail" id="sbEmail">—</div></div>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="overlay" onclick="document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show')"></div>
+
+  <main class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:14px">
+        <button class="sidebar-toggle" onclick="document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').classList.add('show')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <span class="topbar-title">요금제 변경</span>
+      </div>
+    </div>
+
+    <div class="content">
+      <div style="margin-bottom:28px">
+        <h1 style="font-family:var(--font-head);font-size:1.3rem;font-weight:700;margin-bottom:6px">플랜 선택</h1>
+        <p style="color:var(--muted);font-size:.88rem">현재 플랜: <strong id="currentPlanLabel" style="color:var(--accent)">—</strong></p>
+      </div>
+      <div class="pricing-grid" id="pricingGrid"><!-- filled by JS --></div>
+    </div>
+  </main>
+</div>
+
+<script src="app.js"></script>
+<script>
+  if (!CP.requireAuth()) throw 0;
+  const user = CP.getCurrentUser();
+  document.getElementById('sbAvatar').textContent = user.name.charAt(0).toUpperCase();
+  document.getElementById('sbName').textContent = user.name;
+  document.getElementById('sbEmail').textContent = user.email;
+  document.getElementById('currentPlanLabel').textContent = CP.planInfo(user.plan).name;
+
+  const PLANS = [
+    { id:'starter', name:'스타터', price:'9,900', desc:'개인 블로그 및 소규모 사이트',
+      features:['1개 WordPress 사이트','8GB DDR5 RAM','20GB NVMe SSD','무제한 트래픽','자동 DDoS 방어','무료 SSL','자동 백업 (7일)','이메일 지원'] },
+    { id:'pro', name:'프로', price:'29,900', desc:'성장하는 비즈니스 · 전문 블로거', badge:'인기',
+      features:['5개 WordPress 사이트','8GB RAM (격리 환경)','100GB NVMe SSD','무제한 트래픽','DDoS 방어 Pro','Wildcard SSL','자동 백업 (30일)','우선 지원 24/7','스테이징 환경','Cloudflare WAF'] },
+    { id:'enterprise', name:'엔터프라이즈', price:'99,000', desc:'대규모 트래픽 · 기업',
+      features:['무제한 사이트','전용 8GB RAM/사이트','무제한 NVMe SSD','무제한 트래픽','엔터프라이즈 DDoS','전용 SSL','실시간 백업','전담 매니저','SLA 99.99%','전용 IP'] },
+  ];
+
+  const grid = document.getElementById('pricingGrid');
+  grid.innerHTML = PLANS.map(p => {
+    const isCurrent = user.plan === p.id;
+    return `
+    <div class="pcard ${isCurrent?'current':''} ${p.id==='pro'?'featured':''}">
+      ${p.badge ? `<div class="pcard-badge">${p.badge}</div>` : ''}
+      ${isCurrent ? `<div class="current-badge">✓ 현재 플랜</div>` : ''}
+      <div class="pname">${p.name}</div>
+      <div class="pprice">₩${p.price}<span>/월</span></div>
+      <div class="pdesc">${p.desc}</div>
+      <ul class="plist">${p.features.map(f=>`<li><svg viewBox="0 0 14 14" fill="none"><path d="M1.5 7l4 4 7-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>${f}</li>`).join('')}</ul>
+      ${isCurrent
+        ? `<button class="btn btn-ghost" style="width:100%;justify-content:center" disabled>현재 플랜</button>`
+        : `<button class="btn btn-primary" style="width:100%;justify-content:center" onclick="changePlan('${p.id}','${p.name}')">이 플랜으로 변경</button>`
+      }
+    </div>`;
+  }).join('');
+
+  function changePlan(planId, planName) {
+    if (!confirm(`${planName} 플랜으로 변경하시겠습니까?`)) return;
+    const users = CP.getUsers();
+    const idx = users.findIndex(u => u.id === user.id);
+    if (idx !== -1) { users[idx].plan = planId; CP.saveUsers(users); }
+    showToast(`${planName} 플랜으로 변경되었습니다. 🎉`, 'success');
+    setTimeout(() => location.reload(), 1000);
+  }
+</script>
+</body>
+</html>
