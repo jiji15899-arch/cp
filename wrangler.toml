@@ -1,6 +1,6 @@
 name = "cloudpress"
 compatibility_date = "2024-01-01"
-pages_build_output_dir = "public"
+pages_build_output_dir = "cloudpress/public"
 
 [[d1_databases]]
 binding = "DB"
@@ -17,4 +17,4 @@ CF_API_TOKEN = ""
 CF_ZONE_ID = ""
 CF_ACCOUNT_ID = ""
 JWT_SECRET = "change-this-to-random-secret-in-dashboard"
-SITE_DOMAIN = "cloudpress.site"
+SITE_DOMAIN = "cloudpress.cloud-in.co.kr"
